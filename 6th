@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <limits.h>
+
+void calculateTimes(int n, int at[], int bt[], int priority[], int ct[], int tat[], int wt[]) {
+    int remaining_bt[n], isCompleted = 0, time = 0, shortest = -1;
+    int minPriority;
+
+    // Initialize remaining burst times
+    for (int i = 0; i < n; i++) {
+        remaining_bt[i] = bt[i];
+    }
+
+    while (isCompleted < n) {
+        // Find process with highest priority (lowest priority number)
+        minPriority = INT_MAX;
+        shortest = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (at[i] <= time && remaining_bt[i] > 0 && priority[i] < minPriority) {
+                minPriority = priority[i];
+                shortest = i;
+            }
+        }
+
+        if (shortest == -1) {
+            // No process is ready, increment time
+            time++;
+            continue;
+        }
+
+        // Execute process for 1 unit of time
+        remaining_bt[shortest]--;
+        time++;
+
+        // If process is completed
+        if (remaining_bt[shortest] == 0) {
+            ct[shortest] = time;
+            tat[shortest] = ct[shortest] - at[shortest];
+            wt[shortest] = tat[shortest] - bt[shortest];
+            isCompleted++;
+        }
+    }
+}
+
+void displayResults(int n, int at[], int bt[], int priority[], int ct[], int tat[], int wt[]) {
+    float totalWT = 0, totalTAT = 0;
+
+    printf("Process\tArrival\tBurst\tPriority\tCompletion\tTurnaround\tWaiting\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\t\t%d\n", i + 1, at[i], bt[i], priority[i], ct[i], tat[i], wt[i]);
+        totalWT += wt[i];
+        totalTAT += tat[i];
+    }
+
+    printf("\nAverage Waiting Time: %.2f\n", totalWT / n);
+    printf("Average Turnaround Time: %.2f\n", totalTAT / n);
+}
+
+int main() {
+    int n;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    int at[n], bt[n], priority[n], ct[n], tat[n], wt[n];
+
+    printf("Enter the arrival time, burst time, and priority for each process:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Process %d Arrival Time: ", i + 1);
+        scanf("%d", &at[i]);
+        printf("Process %d Burst Time: ", i + 1);
+        scanf("%d", &bt[i]);
+        printf("Process %d Priority (lower value = higher priority): ", i + 1);
+        scanf("%d", &priority[i]);
+    }
+
+    calculateTimes(n, at, bt, priority, ct, tat, wt);
+    displayResults(n, at, bt, priority, ct, tat, wt);
+
+    return 0;
+}
