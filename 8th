@@ -1,0 +1,67 @@
+#include <stdio.h>
+
+void calculateTimes(int n, int at[], int bt[], int wt[], int tat[], int ct[], int tq) {
+    int remaining_bt[n], current_time = 0, completed = 0;
+    int queue[n], front = 0, rear = 0;
+
+    // Initialize remaining burst times and add processes to the queue
+    for (int i = 0; i < n; i++) {
+        remaining_bt[i] = bt[i];
+        queue[rear++] = i;
+    }
+
+    while (completed < n) {
+        int process = queue[front++];
+        int execution_time = (remaining_bt[process] > tq) ? tq : remaining_bt[process];
+        current_time += execution_time;
+        remaining_bt[process] -= execution_time;
+
+        if (remaining_bt[process] > 0) {
+            queue[rear++] = process; // Re-add the process to the queue
+        } else {
+            ct[process] = current_time; // Process completed
+            tat[process] = ct[process] - at[process];
+            wt[process] = tat[process] - bt[process];
+            completed++;
+        }
+    }
+}
+
+void displayResults(int n, int at[], int bt[], int wt[], int tat[], int ct[]) {
+    float totalWT = 0, totalTAT = 0;
+
+    printf("Process\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", i + 1, at[i], bt[i], ct[i], tat[i], wt[i]);
+        totalWT += wt[i];
+        totalTAT += tat[i];
+    }
+
+    printf("\nAverage Waiting Time: %.2f\n", totalWT / n);
+    printf("Average Turnaround Time: %.2f\n", totalTAT / n);
+}
+
+int main() {
+    int n, tq;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    int at[n], bt[n], wt[n], tat[n], ct[n];
+
+    printf("Enter the arrival time and burst time for each process:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Process %d Arrival Time: ", i + 1);
+        scanf("%d", &at[i]);
+        printf("Process %d Burst Time: ", i + 1);
+        scanf("%d", &bt[i]);
+    }
+
+    printf("Enter the time quantum: ");
+    scanf("%d", &tq);
+
+    calculateTimes(n, at, bt, wt, tat, ct, tq);
+    displayResults(n, at, bt, wt, tat, ct);
+
+    return 0;
+}
